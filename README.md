@@ -1,2 +1,2 @@
 ### mini DNN
-1. 实现一个fully connected dnn网络
+1. 瀹炵幇涓�涓猣ully connected dnn缃戠粶
