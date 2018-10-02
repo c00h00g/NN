@@ -49,6 +49,9 @@ public:
     //所有对nodes
     std::vector<Node> nodes;
 
+    //loss函数类型
+    std::string _acti_type;
+
     //激活函数
     //ACTI_FUNC _acti_func;
 };

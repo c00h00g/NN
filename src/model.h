@@ -26,12 +26,12 @@ public:
                                 const std::string& loss_type);
 
     //计算其他层的梯度
-    double calc_other_layer_grad();
+    void calc_middle_layer_grad();
 
     void add_first_layer(uint32_t node_num,
                          const std::string& acti_fun_name);
 
-    void add_other_layer(uint32_t node_num,
+    void add_middle_layer(uint32_t node_num,
                          const std::string& acti_fun_name);
     
     void add_layer(uint32_t node_num,
@@ -47,18 +47,33 @@ public:
 
     void first_layer_forward(Layer& first_layer);
 
-    void other_layer_forward(Layer& left_layer,
+    void middle_layer_forward(Layer& left_layer,
                              Layer& right_layer);
 
     void calc_first_layer_node_forward(
                    const std::vector<double>& weight,
                    Node& node);
 
-    void calc_other_layer_node_forward(
+    void calc_middle_layer_node_forward(
                    const std::vector<double>& weight,
                    Layer& left_layer,
                    Node& node);
 
+    double calc_last_layer_grad(Layer& last_layer,
+                                const std::vector<double>& labels);
+    double calc_cross_entropy_last_layer_grad(const std::vector<double>& labels);
+
+    double calc_squared_last_layer_grad(const std::vector<double>& labels);
+
+    void calc_two_layer_grad(Layer& left_layer,
+                             Layer& right_layer);
+
+    void calc_one_node_backward(Node& node, 
+                                uint32_t node_idx,
+                                Layer& right_layer,
+                                std::vector<std::vector<double> >& mat);
+
+private:
     //loss函数类型
     std::string _loss_type;
 private:

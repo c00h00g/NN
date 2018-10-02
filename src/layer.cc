@@ -59,7 +59,7 @@ void Layer::add_one_node(const std::string& acti_fun_name) {
         node.activation_devi = &nn_sigmoid_deri;
     } else if (acti_fun_name == "tanh") {
         node.activation = &nn_tanh;
-        nnode.activation_devi = &nn_tanh_deri;
+        node.activation_devi = &nn_tanh_deri;
     }
 }
 
