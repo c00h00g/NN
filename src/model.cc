@@ -70,8 +70,7 @@ void MINI_NN::add_middle_layer(uint32_t node_num,
 /**
  * @brief :  计算loss对最后一层的梯度
  **/
-double MINI_NN::calc_last_layer_grad(Layer& last_layer,
-                                const std::vector<double>& labels) {
+double MINI_NN::calc_last_layer_grad(const std::vector<double>& labels) {
     if (_loss_type == "cross-entropy") {
         calc_cross_entropy_last_layer_grad(labels);
     } else if (_loss_type == "squared-loss") {
@@ -93,6 +92,7 @@ void MINI_NN::calc_middle_layer_grad() {
     for (uint32_t i = last_layer_idx; i >= 1; i--) {
         Layer& right_layer = _layers[i];
         Layer& left_layer = _layers[i - 1];
+        calc_two_layer_grad(left_layer, right_layer);
     }
 
     return;
@@ -134,11 +134,8 @@ void MINI_NN::calc_one_node_backward(Node& node,
 //        calc_cross_entropy_loss(_labels);
 
 void MINI_NN::backward() {
-    if (_loss_type == "cross-entropy") {
-        calc_cross_entropy_loss(_labels);
-    } else if (_loss_type == "squared-loss") {
-        calc_squared_loss(_labels);
-    }
+    calc_last_layer_grad(_labels);
+    calc_middle_layer_grad();
 }
 
 /**
@@ -154,7 +151,7 @@ calc_cross_entropy_last_layer_grad(const std::vector<double>& labels) {
         Node& node = last_layer.nodes[i];
         //softmax层只记录最终的值a_value, 即softmax值
         node.devi_a_value = 
-            labels[i] == 1 ? softmax_layer.nodes[i].a_value - 1 : softmax_layer.nodes[i].nodes[i].a_value;
+            labels[i] == 1 ? softmax_layer.nodes[i].a_value - 1 : softmax_layer.nodes[i].a_value;
         node.devi_b_value = node.activation_devi(node.devi_a_value);
     }
 }
@@ -247,7 +244,7 @@ void MINI_NN::middle_layer_forward(Layer& left_layer,
 /**
  * @brief : 计算layer softmax之和
  **/
-void MINI_NN::softmax_sum(const Layer& layer) {
+double MINI_NN::softmax_sum(const Layer& layer) {
     double sum = 0.0;
     for (uint32_t i = 0; i < layer.nodes.size(); ++i) {
         sum += std::exp(layer.nodes[i].a_value);
@@ -255,12 +252,12 @@ void MINI_NN::softmax_sum(const Layer& layer) {
     return sum;
 }
 
-void MINI_NN::softmax_layer_forward(const Layer& left_layer
-                                    const Layer& right_layer) {
-    double softmax_sum = softmax_sum(left_layer);
-    for (uint32_t i = 0; i < right_layer.size(); ++i) {
+void MINI_NN::softmax_layer_forward(const Layer& left_layer,
+                                    Layer& right_layer) {
+    double sum = softmax_sum(left_layer);
+    for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
         right_layer.nodes[i].a_value = 
-                      std::exp(left_layer.nodes[i].a_value) / softmax_sum;
+                      std::exp(left_layer.nodes[i].a_value) / sum;
     }
 }
 
@@ -282,6 +279,4 @@ void MINI_NN::calc_middle_layer_node_forward(
     node.a_value = node.activation(sum);
 }
 
-}
- 
 }//end namespace 

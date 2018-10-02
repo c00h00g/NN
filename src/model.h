@@ -20,11 +20,6 @@ public:
     //反向传播
     void backward();
 
-    //计算各种loss对最后一层输出的梯度
-    double calc_last_layer_grad(Layer& last_layer,
-                                const std::vector<double>& labels,
-                                const std::string& loss_type);
-
     //计算其他层的梯度
     void calc_middle_layer_grad();
 
@@ -36,14 +31,6 @@ public:
     
     void add_layer(uint32_t node_num,
                    const std::string& acti_fun_name);
-
-    double calc_cross_entropy_loss(Layer& last_layer,
-                                   const std::vector<double>& labels,
-                                   const std::string& loss_type);
-
-    double calc_squared_loss(Layer& last_layer,
-                             const std::vector<double>& labels,
-                             const std::string& loss_type);
 
     void first_layer_forward(Layer& first_layer);
 
@@ -59,8 +46,8 @@ public:
                    Layer& left_layer,
                    Node& node);
 
-    double calc_last_layer_grad(Layer& last_layer,
-                                const std::vector<double>& labels);
+    double calc_last_layer_grad(const std::vector<double>& labels);
+
     double calc_cross_entropy_last_layer_grad(const std::vector<double>& labels);
 
     double calc_squared_last_layer_grad(const std::vector<double>& labels);
@@ -72,6 +59,11 @@ public:
                                 uint32_t node_idx,
                                 Layer& right_layer,
                                 std::vector<std::vector<double> >& mat);
+
+    void softmax_layer_forward(const Layer& left_layer,
+                               Layer& right_layer);
+
+    double softmax_sum(const Layer& layer);
 
 private:
     //loss函数类型
