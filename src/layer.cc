@@ -2,6 +2,12 @@
 
 namespace NN {
 
+Layer::Layer() {
+    nodes.clear();
+    mat.clear();
+    grad.clear();
+}
+
 /**
  * @brief : layer节点个数
  **/

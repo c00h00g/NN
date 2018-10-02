@@ -5,6 +5,7 @@ namespace NN {
 
 MINI_NN::MINI_NN() {
     input_nodes.clear();
+    _layers.clear();
 }
 
 /**

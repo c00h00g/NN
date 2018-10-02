@@ -2,17 +2,23 @@ CXX=c++
 CXXFLAGS=-std=c++11 -g -march=native
 RM=rm -f
 
-activation.o : activation.cc activation.h
-	$(CXX) $(CXXFLAGS) -c $<
+mini_nn : activation.o node.o layer.o model.o mini_nn.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
-node.o : node.cc node.h
-	$(CXX) $(CXXFLAGS) -c $<
-
-layer.o : layer.cc layer.h
+mini_nn.o : mini_nn.cc
 	$(CXX) $(CXXFLAGS) -c $<
 
 model.o : model.cc model.h
 	$(CXX) $(CXXFLAGS) -c $<
 
+layer.o : layer.cc layer.h
+	$(CXX) $(CXXFLAGS) -c $<
+
+node.o : node.cc node.h
+	$(CXX) $(CXXFLAGS) -c $<
+
+activation.o : activation.cc activation.h
+	$(CXX) $(CXXFLAGS) -c $<
+
 clean:
-	$(RM) *.o
+	$(RM) *.o mini_nn

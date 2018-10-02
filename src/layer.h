@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <assert.h>
+#include <memory.h>
 
 #include "activation.h"
 #include "node.h"
