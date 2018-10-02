@@ -5,7 +5,7 @@ namespace NN {
 /**
  * @brief : layer节点个数
  **/
-void Layer::get_node_size() {
+uint32_t Layer::get_node_size() {
     return nodes.size();
 }
 
@@ -29,8 +29,8 @@ void Layer::init(uint32_t m,
 /**
  * @brief : 添加节点
  **/
-void NN::add_nodes(uint32_t node_num,
-                   const std::string& acti_fun_name) {
+void Layer::add_nodes(uint32_t node_num,
+                      const std::string& acti_fun_name) {
     for (uint32_t i = 0; i < node_num; ++i) {
         add_one_node(acti_fun_name);
     }
@@ -39,13 +39,13 @@ void NN::add_nodes(uint32_t node_num,
 /**
  * @brief : 添加一个节点
  **/
-void NN::add_one_node(const std::string& acti_fun_name) {
+void Layer::add_one_node(const std::string& acti_fun_name) {
     Node node;
     nodes.push_back(node);
     if (acti_fun_name == "sigmoid") {
-        node.activation = &sigmoid;
+        node.activation = &nn_sigmoid;
     } else if (acti_fun_name == "tanh") {
-        node.activation = &tanh;
+        node.activation = &nn_tanh;
     }
 }
 

@@ -1,10 +1,11 @@
+#include <algorithm>
 
 namespace NN {
 
-double std_log(double x);
+double nn_log(double x);
 
-double sigmoid(double x);
+double nn_sigmoid(double x);
 
-double tanh(double x);
+double nn_tanh(double x);
     
 }

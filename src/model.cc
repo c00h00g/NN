@@ -1,42 +1,18 @@
-#include <string>
-#include <iostream>
-#include <assert.h>
-
 #include "model.h"
 #include "layer.h"
 
-namespace nn {
+namespace NN {
 
-NN::NN() {
-    nodes.clear();
-    memset(mat, 0, sizeof(mat));
-}
-
-/**
- * @brief : 对nn网络添加一层
- * @param node_num : 每层节点个数
- * @param level : 记录nn的第几层
- * @param acti_fun_name : 激活函数
- **/
-void NN::add_layer(uint32_t node_num,
-                   uint32_t level,
-                   std::string& acti_fun_name) {
-    assert(node_num > 0);
-    assert(level > 0);
-
-    //前一层是输入
-    if (level == 1) {
-        add_first_layer(node_num, level, acti_fun_name);
-    } else {
-        
-    }
+MINI_NN::MINI_NN() {
+    input_nodes.clear();
 }
 
 /**
  * @brief : 添加第一层
  **/
-void NN::add_first_layer(uint32_t node_num,
-                         const std::string& acti_fun_name) {
+void MINI_NN::add_first_layer(
+                     uint32_t node_num,
+                     const std::string& acti_fun_name) {
     assert(node_num > 0);
 
     Layer layer;
@@ -47,7 +23,7 @@ void NN::add_first_layer(uint32_t node_num,
     layer.init(row, col, 1);
 
     //添加节点
-    layer.add_nodes(node_num);
+    layer.add_nodes(node_num, acti_fun_name);
 
     //加入层
     _layers.push_back(layer);
@@ -56,21 +32,20 @@ void NN::add_first_layer(uint32_t node_num,
 /**
  * @brief : 添加第一层
  **/
-void NN::add_layer(uint32_t node_num,
-                   const std::string& acti_fun_name) {
+void MINI_NN::add_layer(uint32_t node_num,
+                        const std::string& acti_fun_name) {
     assert(node_num > 0);
-    assert(level > 1);
 
     //添加第一层
-    if (layer.size() == 0) {
-        add_first_layer(node_num, 1, acti_fun_name);
+    if (_layers.size() == 0) {
+        add_first_layer(node_num, acti_fun_name);
     }else {
         add_other_layer(node_num, acti_fun_name);
     }
 }
 
-void NN::add_other_layer(uint32_t node_num,
-                         const std::string& acti_fun_name) {
+void MINI_NN::add_other_layer(uint32_t node_num,
+                              const std::string& acti_fun_name) {
     Layer layer;
 
     uint32_t row = node_num;
@@ -92,7 +67,7 @@ void NN::add_other_layer(uint32_t node_num,
 /**
  * @brief :  计算loss对最后一层的梯度
  **/
-double NN::calc_last_layer_grad(Layer& last_layer,
+double MINI_NN::calc_last_layer_grad(Layer& last_layer,
                                 const std::vector<double>& labels,
                                 const std::string& loss_type) {
     if (loss_type == "cross-entropy") {
@@ -100,12 +75,14 @@ double NN::calc_last_layer_grad(Layer& last_layer,
     } else if (loss_type == "squared-loss") {
         
     }
+
+    return 0.0;
 }
 
 /**
  * @brief : 计算交叉熵loss
  **/
-double NN::calc_cross_entropy_loss(Layer& last_layer,
+double MINI_NN::calc_cross_entropy_loss(Layer& last_layer,
                                    const std::vector<double>& labels,
                                    const std::string& loss_type) {
 }
@@ -113,7 +90,7 @@ double NN::calc_cross_entropy_loss(Layer& last_layer,
 /**
  * @brief : 计算平方loss
  **/
-double NN::calc_squared_loss(Layer& last_layer,
+double MINI_NN::calc_squared_loss(Layer& last_layer,
                              const std::vector<double>& labels,
                              const std::string& loss_type) {
 }
@@ -121,7 +98,7 @@ double NN::calc_squared_loss(Layer& last_layer,
 /**
  * @brief : 前向传播
  **/
-void NN::forward() {
+void MINI_NN::forward() {
     for (uint32_t i = 0; i < _layers.size(); ++i) {
         if (i == 0) {
             first_layer_forward(_layers[i]);
@@ -131,7 +108,7 @@ void NN::forward() {
     }
 }
 
-void NN::first_layer_forward(Layer& first_layer) {
+void MINI_NN::first_layer_forward(Layer& first_layer) {
     std::vector<std::vector<double> >& mat = _layers[0].mat;
     for (uint32_t i = 0; i < first_layer.nodes.size(); ++i) {
         calc_first_layer_node_forward(mat[i], first_layer.nodes[i]);
@@ -148,7 +125,7 @@ void NN::first_layer_forward(Layer& first_layer) {
 /**
  * @brief : 计算一个节点的值
  **/
-void NN::calc_first_layer_node_forward(
+void MINI_NN::calc_first_layer_node_forward(
              const std::vector<double>& weight,
              Node& node) {
     double sum = 0.0;
@@ -166,7 +143,7 @@ void NN::calc_first_layer_node_forward(
  * @param left_layer : 左边一层
  * @param right_layer : 右边一层
  **/
-void NN::other_layer_forward(Layer& left_layer,
+void MINI_NN::other_layer_forward(Layer& left_layer,
                              Layer& right_layer) {
     std::vector<std::vector<double> >& mat = right_layer.mat;
     for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
@@ -189,7 +166,7 @@ void NN::other_layer_forward(Layer& left_layer,
  * @param left_layer
  * @param node : 右边需要计算的节点
  **/
-void NN::calc_other_layer_node_forward(
+void MINI_NN::calc_other_layer_node_forward(
                const std::vector<double>& weight,
                Layer& left_layer,
                Node& node) {
