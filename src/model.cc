@@ -1,4 +1,5 @@
-#include <string.h>
+#include <string>
+#include <iostream>
 #include <assert.h>
 
 #include "model.h"
@@ -35,17 +36,15 @@ void NN::add_layer(uint32_t node_num,
  * @brief : 添加第一层
  **/
 void NN::add_first_layer(uint32_t node_num,
-                         uint32_t level,
                          const std::string& acti_fun_name) {
     assert(node_num > 0);
-    assert(level > 0);
 
     Layer layer;
 
     //初始化矩阵
     uint32_t row = node_num;
     uint32_t col = input_nodes.size();
-    layer.init(row, col, level);
+    layer.init(row, col, 1);
 
     //添加节点
     layer.add_nodes(node_num);
@@ -66,12 +65,12 @@ void NN::add_layer(uint32_t node_num,
     if (layer.size() == 0) {
         add_first_layer(node_num, 1, acti_fun_name);
     }else {
-        add_middle_layer();
+        add_other_layer(node_num, acti_fun_name);
     }
 }
 
-void NN::add_middle_layer(uint32_t node_num,
-                          const std::string& acti_fun_name) {
+void NN::add_other_layer(uint32_t node_num,
+                         const std::string& acti_fun_name) {
     Layer layer;
 
     uint32_t row = node_num;
@@ -125,32 +124,81 @@ double NN::calc_squared_loss(Layer& last_layer,
 void NN::forward() {
     for (uint32_t i = 0; i < _layers.size(); ++i) {
         if (i == 0) {
-
+            first_layer_forward(_layers[i]);
         }else {
-            
+            other_layer_forward(_layers[i - 1], _layers[i]);
         }
     }
 }
 
 void NN::first_layer_forward(Layer& first_layer) {
+    std::vector<std::vector<double> >& mat = _layers[0].mat;
     for (uint32_t i = 0; i < first_layer.nodes.size(); ++i) {
-        for (uint32_t j = 0; j < input_nodes.size(); ++j) {
-            
-        }
+        calc_first_layer_node_forward(mat[i], first_layer.nodes[i]);
+
+#if _DEBUG
+        std::cerr << "Layer idx : \n" << 0
+                  << "Node idx : \n" << i
+                  << "b_value : " << first_layer.nodes[i].b_value
+                  << "a_value : " << first_layer.nodes[i].a_value;
+#endif
     }
 }
 
 /**
  * @brief : 计算一个节点的值
  **/
-double NN::calc_node_value(const std::vector<double>& vec,
-                           Node& node) {
-    
+void NN::calc_first_layer_node_forward(
+             const std::vector<double>& weight,
+             Node& node) {
+    double sum = 0.0;
+    for (uint32_t i = 0; i < weight.size(); ++i) {
+        sum += weight[i] * input_nodes[i];
+    }
+    //线性相加后的值
+    node.b_value = sum;
+    //激活后的值
+    node.a_value = node.activation(sum);
 }
 
+/**
+ * @计算非第一层之前的正向传播
+ * @param left_layer : 左边一层
+ * @param right_layer : 右边一层
+ **/
 void NN::other_layer_forward(Layer& left_layer,
                              Layer& right_layer) {
-    
+    std::vector<std::vector<double> >& mat = right_layer.mat;
+    for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
+        calc_other_layer_node_forward(mat[i], 
+                                      left_layer,
+                                      right_layer.nodes[i]);
+#if _DEBUG
+        std::cerr << "left Layer idx : " << left_layer.level
+                  << "right Layer idx : " << right_layer.level
+                  << "Node idx : \n" << i
+                  << "b_value : " << right_layer.nodes[i].b_value
+                  << "a_value : " << right_layer.nodes[i].a_value;
+#endif
+    }
+}
+
+/**
+ * @brief : 使用前一层 & 权重矩阵更新新一层Node的值
+ * @param weight : 右边layer一个节点对应的权重矩阵
+ * @param left_layer
+ * @param node : 右边需要计算的节点
+ **/
+void NN::calc_other_layer_node_forward(
+               const std::vector<double>& weight,
+               Layer& left_layer,
+               Node& node) {
+    double sum = 0.0;
+    for (uint32_t i = 0; i < weight.size(); ++i) {
+        sum += weight[i] * left_layer.nodes[i].a_value;
+    }
+    node.b_value = sum;
+    node.a_value = node.activation(sum);
 }
  
 }//end namespace 
