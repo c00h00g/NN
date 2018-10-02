@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "activation.h"
 
 namespace NN {
 
@@ -16,6 +16,7 @@ class Node {
     double devi_b_value;
     //¼¤»îº¯ÊýÖ¸Õë
     double (*activation)(double);
+
   public:
     Node() {
         b_value = 0.0;
