@@ -18,7 +18,7 @@ public:
     void forward();
 
     //反向传播
-    void backword();
+    void backward();
 
     //计算各种loss对最后一层输出的梯度
     double calc_last_layer_grad(Layer& last_layer,
@@ -58,12 +58,15 @@ public:
                    const std::vector<double>& weight,
                    Layer& left_layer,
                    Node& node);
+
+    //loss函数类型
+    std::string _loss_type;
 private:
    //输入节点
    std::vector<double> input_nodes;
 
    //label值
-   std::vector<double> labels;
+   std::vector<double> _labels;
 
    //记录所有的层
    std::vector<Layer> _layers;

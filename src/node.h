@@ -8,14 +8,24 @@ class Node {
   public:
     //节点激活函数之前的值
     double b_value;
+
     //节点激活函数之后的值
     double a_value;
+
     //偏置
     double b;
+
     //b_value对loss导数
     double devi_b_value;
+
+    //a_value对loss导数
+    double devi_a_value;
+    
     //激活函数指针
     double (*activation)(double);
+
+    //激活导数函数指针
+    double (*activation_devi)(double);
 
   public:
     Node() {

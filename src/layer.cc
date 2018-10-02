@@ -29,6 +29,12 @@ void Layer::init(uint32_t m,
         mat[i].resize(n, 0);
     }
 
+    //≥ı ºªØÃ›∂»æÿ’Û
+    grad.resize(m);
+    for (uint32_t i = 0; i < m; ++i) {
+        grad[i].resize(n, 0);
+    }
+
     this->level = level;
 }
 
@@ -50,8 +56,10 @@ void Layer::add_one_node(const std::string& acti_fun_name) {
     nodes.push_back(node);
     if (acti_fun_name == "sigmoid") {
         node.activation = &nn_sigmoid;
+        node.activation_devi = &nn_sigmoid_deri;
     } else if (acti_fun_name == "tanh") {
         node.activation = &nn_tanh;
+        nnode.activation_devi = &nn_tanh_deri;
     }
 }
 
