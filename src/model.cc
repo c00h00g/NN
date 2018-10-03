@@ -12,9 +12,17 @@ void MINI_NN::add_loss_func(const std::string& loss_type) {
     _loss_type = loss_type;
 }
 
+/**
+ * @brief 
+ * @param x_train : 训练样本个数
+ * @param y_train : 训练样本对应的lable
+ * @param epochs : 训练的轮数
+ **/
 void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
                   const std::vector<uint32_t>& y_train,
                   uint32_t epochs) {
+    assert(x_train.size() == y_train.size());
+    assert(epochs > 0);
 }
 
 /**
@@ -263,10 +271,12 @@ void MINI_NN::calc_first_layer_node_forward(
     for (uint32_t i = 0; i < weight.size(); ++i) {
         sum += weight[i] * input_nodes[i];
     }
+
     //线性相加后的值
-    node.b_value = sum;
+    node.b_value = sum + node.b;
+
     //激活后的值
-    node.a_value = node.activation(sum);
+    node.a_value = node.activation(node.b_value);
 }
 
 /**
@@ -293,6 +303,7 @@ void MINI_NN::middle_layer_forward(Layer& left_layer,
 
 /**
  * @brief : 计算layer softmax之和
+ * @param layer : 需要做softmax的层
  **/
 double MINI_NN::softmax_sum(const Layer& layer) {
     double sum = 0.0;
@@ -325,8 +336,8 @@ void MINI_NN::calc_middle_layer_node_forward(
     for (uint32_t i = 0; i < weight.size(); ++i) {
         sum += weight[i] * left_layer.nodes[i].a_value;
     }
-    node.b_value = sum;
-    node.a_value = node.activation(sum);
+    node.b_value = sum + node.b;
+    node.a_value = node.activation(node.b_value);
 }
 
 }//end namespace 
