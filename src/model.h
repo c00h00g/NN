@@ -65,6 +65,17 @@ public:
 
     double softmax_sum(const Layer& layer);
 
+    void update_layer_weight(std::vector<std::vector<double> >& mat,
+                             std::vector<std::vector<double> >& grad);
+
+    void calc_first_layer_grad(Layer& first_layer);
+
+    void add_loss_func(const std::string& loss_type);
+
+    void fit(const std::vector<std::vector<double> >& x_train,
+             const std::vector<uint32_t>& y_train,
+             uint32_t epochs);
+
 private:
     //loss∫Ø ˝¿‡–Õ
     std::string _loss_type;

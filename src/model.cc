@@ -8,8 +8,18 @@ MINI_NN::MINI_NN() {
     _layers.clear();
 }
 
+void MINI_NN::add_loss_func(const std::string& loss_type) {
+    _loss_type = loss_type;
+}
+
+void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
+                  const std::vector<uint32_t>& y_train,
+                  uint32_t epochs) {
+}
+
 /**
  * @brief : 添加第一层
+ * @param node_num : 节点个数
  **/
 void MINI_NN::add_first_layer(
                      uint32_t node_num,
@@ -84,15 +94,22 @@ void MINI_NN::calc_middle_layer_grad() {
     int32_t last_layer_idx = -1;
     uint32_t layer_num = _layers.size();
     if (_loss_type == "cross-entropy") {
+        //跳过softmax层
         last_layer_idx = layer_num - 2;
     } else if (_loss_type == "squared-loss") {
         last_layer_idx = layer_num - 1;
     }
 
-    for (uint32_t i = last_layer_idx; i >= 1; i--) {
-        Layer& right_layer = _layers[i];
-        Layer& left_layer = _layers[i - 1];
-        calc_two_layer_grad(left_layer, right_layer);
+    for (uint32_t i = last_layer_idx; i >= 0; i--) {
+        //first layer
+        if (i == 0) {
+            Layer& first_layer = _layers[i];
+            calc_first_layer_grad(first_layer);
+        } else { // middle layer
+            Layer& right_layer = _layers[i];
+            Layer& left_layer = _layers[i - 1];
+            calc_two_layer_grad(left_layer, right_layer);
+        }
     }
 
     return;
@@ -102,6 +119,7 @@ void MINI_NN::calc_two_layer_grad(Layer& left_layer,
                                   Layer& right_layer) {
     //计算节点梯度
     std::vector<std::vector<double> >& mat = right_layer.mat; 
+    std::vector<std::vector<double> >& grad = right_layer.grad; 
     for (uint32_t i = 0; i < left_layer.nodes.size(); ++i) {
         calc_one_node_backward(left_layer.nodes[i],
                                i,
@@ -109,10 +127,42 @@ void MINI_NN::calc_two_layer_grad(Layer& left_layer,
                                mat);
     }
 
+    //梯度下降
+    update_layer_weight(mat, grad);
+}
+
+void MINI_NN::update_layer_weight(std::vector<std::vector<double> >& mat,
+                                  std::vector<std::vector<double> >& grad) {
+    for (uint32_t i = 0; i < mat.size(); ++i) {
+        for (uint32_t j = 0; j < mat[0].size(); ++j) {
+            mat[i][j] -= grad[i][j];
+        }
+    }
+}
+
+/**
+ * @brief : 计算第一层的梯度 && 更新梯度
+ **/
+void MINI_NN::calc_first_layer_grad(Layer& first_layer) {
+    std::vector<std::vector<double> >& mat = first_layer.mat;
+    std::vector<std::vector<double> >& grad = first_layer.grad;
+    //计算梯度
+    for (uint32_t i = 0; i < input_nodes.size(); ++i) {
+        for (uint32_t j = 0; j < first_layer.nodes.size(); ++i) {
+            grad[j][i] = first_layer.nodes[j].devi_b_value * input_nodes[i];
+        }
+    }
+
+    //更新梯度
+    update_layer_weight(mat, grad);
 }
 
 /**
  * @brief : 计算反向传播
+ * @param node : 左边一层一个节点
+ * @param node_idx : 节点索引
+ * @param right_layer : 右边一层
+ * @param mat : left_layer & right_layer之间的矩阵
  **/
 void MINI_NN::calc_one_node_backward(Node& node, 
                                      uint32_t node_idx,
@@ -130,9 +180,9 @@ void MINI_NN::calc_one_node_backward(Node& node,
     node.devi_b_value = node.activation_devi(node.devi_a_value);
 }
 
-//if (_loss_type == "cross-entropy") {
-//        calc_cross_entropy_loss(_labels);
-
+/**
+ * @brief : 反向传播
+ **/
 void MINI_NN::backward() {
     calc_last_layer_grad(_labels);
     calc_middle_layer_grad();
