@@ -12,6 +12,14 @@ void MINI_NN::add_loss_func(const std::string& loss_type) {
     _loss_type = loss_type;
 }
 
+void MINI_NN::fill_data(
+    const std::vector<double>& train_line,
+    const std::vector<uint32_t>& train_label) {
+    
+    input_nodes.assign(train_line.begin(), train_line.end());
+    _labels.assign(train_label.begin(), train_label.end());
+}
+
 /**
  * @brief 
  * @param x_train : 训练样本个数
@@ -19,7 +27,7 @@ void MINI_NN::add_loss_func(const std::string& loss_type) {
  * @param epochs : 训练的轮数
  **/
 void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
-                  const std::vector<uint32_t>& y_train,
+                  const std::vector<std::vector<uint32_t> >& y_train,
                   uint32_t epoch) {
     assert(x_train.size() == y_train.size());
     assert(epoch > 0);
@@ -54,8 +62,10 @@ void MINI_NN::add_first_layer(
     _layers.push_back(layer);
 }
 
-void MINI_NN::add_input_layer(uint32_t input_num) {
+void MINI_NN::add_input_layer(uint32_t input_num,
+                              uint32_t output_num) {
     input_nodes.resize(input_num);
+    _layers.resize(output_num);
 }
 
 /**
@@ -224,7 +234,8 @@ calc_cross_entropy_last_layer_grad(const std::vector<uint32_t>& labels) {
 /**
  * @brief : 计算平方loss
  **/
-double MINI_NN::calc_squared_last_layer_grad(const std::vector<uint32_t>& labels) {
+double MINI_NN::
+calc_squared_last_layer_grad(const std::vector<uint32_t>& labels) {
     uint32_t layer_num = _layers.size();
     Layer& last_layer = _layers[layer_num - 1];
     for (uint32_t i = 0; i < last_layer.nodes.size(); ++i) {

@@ -32,7 +32,7 @@ public:
     void add_layer(uint32_t node_num,
                    const std::string& acti_fun_name);
 
-    void add_input_layer(uint32_t input_num);
+    void add_input_layer(uint32_t input_num, uint32_t output_num);
 
     void first_layer_forward(Layer& first_layer);
 
@@ -74,8 +74,11 @@ public:
 
     void add_loss_func(const std::string& loss_type);
 
+    void fill_data(const std::vector<double>& train_line,
+                   const std::vector<uint32_t>& train_label);
+
     void fit(const std::vector<std::vector<double> >& x_train,
-             const std::vector<uint32_t>& y_train,
+             const std::vector<std::vector<uint32_t> >& y_train,
              uint32_t epochs);
 
 private:
