@@ -20,9 +20,14 @@ void MINI_NN::add_loss_func(const std::string& loss_type) {
  **/
 void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
                   const std::vector<uint32_t>& y_train,
-                  uint32_t epochs) {
+                  uint32_t epoch) {
     assert(x_train.size() == y_train.size());
-    assert(epochs > 0);
+    assert(epoch > 0);
+
+    while (epoch--) {
+        for (uint32_t i = 0; i < x_train.size(); ++i) {
+        }
+    }
 }
 
 /**
@@ -47,6 +52,10 @@ void MINI_NN::add_first_layer(
 
     //加入层
     _layers.push_back(layer);
+}
+
+void MINI_NN::add_input_layer(uint32_t input_num) {
+    input_nodes.resize(input_num);
 }
 
 /**
@@ -88,14 +97,12 @@ void MINI_NN::add_middle_layer(uint32_t node_num,
 /**
  * @brief :  计算loss对最后一层的梯度
  **/
-double MINI_NN::calc_last_layer_grad(const std::vector<double>& labels) {
+void MINI_NN::calc_last_layer_grad(const std::vector<uint32_t>& labels) {
     if (_loss_type == "cross-entropy") {
         calc_cross_entropy_last_layer_grad(labels);
     } else if (_loss_type == "squared-loss") {
         calc_squared_last_layer_grad(labels);
     }
-
-    return 0.0;
 }
 
 void MINI_NN::calc_middle_layer_grad() {
@@ -200,7 +207,7 @@ void MINI_NN::backward() {
  * @brief : 计算交叉熵loss
  **/
 double MINI_NN::
-calc_cross_entropy_last_layer_grad(const std::vector<double>& labels) {
+calc_cross_entropy_last_layer_grad(const std::vector<uint32_t>& labels) {
     uint32_t layer_num = _layers.size();
     assert(layer_num >= 2);
     Layer& softmax_layer = _layers[layer_num - 1];
@@ -217,7 +224,7 @@ calc_cross_entropy_last_layer_grad(const std::vector<double>& labels) {
 /**
  * @brief : 计算平方loss
  **/
-double MINI_NN::calc_squared_last_layer_grad(const std::vector<double>& labels) {
+double MINI_NN::calc_squared_last_layer_grad(const std::vector<uint32_t>& labels) {
     uint32_t layer_num = _layers.size();
     Layer& last_layer = _layers[layer_num - 1];
     for (uint32_t i = 0; i < last_layer.nodes.size(); ++i) {

@@ -32,6 +32,8 @@ public:
     void add_layer(uint32_t node_num,
                    const std::string& acti_fun_name);
 
+    void add_input_layer(uint32_t input_num);
+
     void first_layer_forward(Layer& first_layer);
 
     void middle_layer_forward(Layer& left_layer,
@@ -46,11 +48,11 @@ public:
                    Layer& left_layer,
                    Node& node);
 
-    double calc_last_layer_grad(const std::vector<double>& labels);
+    void calc_last_layer_grad(const std::vector<uint32_t>& labels);
 
-    double calc_cross_entropy_last_layer_grad(const std::vector<double>& labels);
+    double calc_cross_entropy_last_layer_grad(const std::vector<uint32_t>& labels);
 
-    double calc_squared_last_layer_grad(const std::vector<double>& labels);
+    double calc_squared_last_layer_grad(const std::vector<uint32_t>& labels);
 
     void calc_two_layer_grad(Layer& left_layer,
                              Layer& right_layer);
@@ -84,7 +86,7 @@ private:
    std::vector<double> input_nodes;
 
    //label值
-   std::vector<double> _labels;
+   std::vector<uint32_t> _labels;
 
    //记录所有的层
    std::vector<Layer> _layers;
