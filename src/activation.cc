@@ -42,6 +42,5 @@ double nn_tanh_deri(double x) {
 double nn_relu_deri(double x) {
     return x > 0 ? 1 : 0;
 }
-
     
 };

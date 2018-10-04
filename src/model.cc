@@ -34,6 +34,15 @@ void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
 
     while (epoch--) {
         for (uint32_t i = 0; i < x_train.size(); ++i) {
+
+            //feed数据
+            fill_data(x_train[i], y_train[i]);
+
+            //前向传播
+            forward();
+
+            //反向传播
+            backward();
         }
     }
 }
@@ -56,7 +65,7 @@ void MINI_NN::add_first_layer(
 
     //添加节点
     layer.add_nodes(node_num, acti_fun_name);
-    layer._acti_type == "softmax";
+    layer._acti_type = acti_fun_name;
 
     //加入层
     _layers.push_back(layer);
@@ -65,7 +74,6 @@ void MINI_NN::add_first_layer(
 void MINI_NN::add_input_layer(uint32_t input_num,
                               uint32_t output_num) {
     input_nodes.resize(input_num);
-    _layers.resize(output_num);
 }
 
 /**
@@ -99,7 +107,7 @@ void MINI_NN::add_middle_layer(uint32_t node_num,
     layer.init(row, last_layer_nd_num, last_level + 1);
 
     layer.add_nodes(node_num, acti_fun_name);
-    layer._acti_type == "softmax";
+    layer._acti_type = acti_fun_name;
 
     _layers.push_back(layer);
 }

@@ -60,6 +60,9 @@ void Layer::add_one_node(const std::string& acti_fun_name) {
     } else if (acti_fun_name == "tanh") {
         node.activation = &nn_tanh;
         node.activation_devi = &nn_tanh_deri;
+    } else if (acti_fun_name == "relu") {
+        node.activation = &nn_relu;
+        node.activation_devi = &nn_relu_deri;
     }
 }
 
