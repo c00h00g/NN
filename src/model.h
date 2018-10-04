@@ -14,8 +14,9 @@ namespace NN {
 
 class MINI_NN {
 public:
-    MINI_NN();
-    
+    //构造函数
+    MINI_NN(const std::string& data_path);
+
     //正向传播
     void forward();
 
@@ -84,11 +85,15 @@ public:
                    std::vector<std::string>& y_train,
                    std::map<std::string, uint32_t>& all_labels);
 
-    void fit(const std::vector<std::vector<double> >& x_train,
-             const std::vector<std::vector<uint32_t> >& y_train,
-             uint32_t epochs);
+    void fit();
 
 private:
+   //epoch
+   uint32_t _epoch;
+
+   //训练文件
+   std::string _data_path;
+
    //loss函数类型
    std::string _loss_type;
 

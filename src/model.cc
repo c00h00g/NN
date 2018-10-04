@@ -3,9 +3,10 @@
 
 namespace NN {
 
-MINI_NN::MINI_NN() {
+MINI_NN::MINI_NN(const std::string& data_path) {
     input_nodes.clear();
     _layers.clear();
+    _data_path = data_path;
 }
 
 void MINI_NN::add_loss_func(const std::string& loss_type) {
@@ -22,10 +23,12 @@ void MINI_NN::fill_data(
 
 //输入格式
 //label f1 f2 f3 ... fn, 使用tab分割
-void MINI_NN::load_data(const std::string& data_path,
-               std::vector<std::vector<double> >& x_train,
-               std::vector<std::string>& y_train,
-               std::map<std::string, uint32_t>& all_labels) {
+void MINI_NN::load_data(
+                   const std::string& data_path,
+                   std::vector<std::vector<double> >& x_train,
+                   std::vector<std::string>& y_train,
+                   std::map<std::string, uint32_t>& all_labels) {
+
     std::vector<std::string> all_lines;
     {
         read_lines(data_path, all_lines);
@@ -61,17 +64,13 @@ void MINI_NN::load_data(const std::string& data_path,
  * @param y_train : 训练样本对应的lable
  * @param epochs : 训练的轮数
  **/
-void MINI_NN::fit(const std::vector<std::vector<double> >& x_train,
-                  const std::vector<std::vector<uint32_t> >& y_train,
-                  uint32_t epoch) {
-    assert(x_train.size() == y_train.size());
-    assert(epoch > 0);
+void MINI_NN::fit() {
 
-    while (epoch--) {
-        for (uint32_t i = 0; i < x_train.size(); ++i) {
+    while (_epoch--) {
+        for (uint32_t i = 0; i < _x_train.size(); ++i) {
 
             //feed数据
-            fill_data(x_train[i], y_train[i]);
+            fill_data(_x_train[i], _y_train[i]);
 
             //前向传播
             forward();
