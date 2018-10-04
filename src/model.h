@@ -4,9 +4,11 @@
 #include <string>
 #include <iostream>
 #include <assert.h>
+#include <map>
 
 #include "layer.h"
 #include "node.h"
+#include "utils.h"
 
 namespace NN {
 
@@ -77,14 +79,19 @@ public:
     void fill_data(const std::vector<double>& train_line,
                    const std::vector<uint32_t>& train_label);
 
+    void load_data(const std::string& data_path,
+                   std::vector<std::vector<double> >& x_train,
+                   std::vector<std::string>& y_train,
+                   std::map<std::string, uint32_t>& all_labels);
+
     void fit(const std::vector<std::vector<double> >& x_train,
              const std::vector<std::vector<uint32_t> >& y_train,
              uint32_t epochs);
 
 private:
-    //loss函数类型
-    std::string _loss_type;
-private:
+   //loss函数类型
+   std::string _loss_type;
+
    //输入节点
    std::vector<double> input_nodes;
 
@@ -93,6 +100,12 @@ private:
 
    //记录所有的层
    std::vector<Layer> _layers;
+
+   //x_train
+   std::vector<std::vector<double> > _x_train;
+
+   //y_train
+   std::vector<std::vector<uint32_t> > _y_train;
 };
     
 }

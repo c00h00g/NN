@@ -20,6 +20,41 @@ void MINI_NN::fill_data(
     _labels.assign(train_label.begin(), train_label.end());
 }
 
+//输入格式
+//label f1 f2 f3 ... fn, 使用tab分割
+void MINI_NN::load_data(const std::string& data_path,
+               std::vector<std::vector<double> >& x_train,
+               std::vector<std::string>& y_train,
+               std::map<std::string, uint32_t>& all_labels) {
+    std::vector<std::string> all_lines;
+    {
+        read_lines(data_path, all_lines);
+        std::random_shuffle(all_lines.begin(), all_lines.end());
+    }
+
+    std::vector<double> fea;
+    std::vector<std::string> output;
+    uint32_t label_num = 0;
+    for (uint32_t i = 0; i < all_lines.size(); ++i) {
+        fea.clear();
+        output.clear();
+
+        split(all_lines[i], output, "\t");
+        for (uint32_t j = 0; j < output.size(); ++j) {
+            if (j == 0) {
+                auto iter = all_labels.find(output[j]);
+                if (iter != all_labels.end()) {
+                    all_labels[output[j]] = label_num++;
+                }
+                y_train.push_back(output[j]);
+            }else {
+                fea.push_back(std::stod(output[j]));
+            }
+        }
+        x_train.push_back(fea);
+    }
+}
+
 /**
  * @brief 
  * @param x_train : 训练样本个数
