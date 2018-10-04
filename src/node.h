@@ -33,6 +33,7 @@ class Node {
         a_value = 0.0;
         b = 0;
         devi_b_value = 0.0;
+        devi_a_value = 0.0;
     }
 };
 
