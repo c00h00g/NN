@@ -53,7 +53,6 @@ void Layer::add_nodes(uint32_t node_num,
  **/
 void Layer::add_one_node(const std::string& acti_fun_name) {
     Node node;
-    nodes.push_back(node);
     if (acti_fun_name == "sigmoid") {
         node.activation = &nn_sigmoid;
         node.activation_devi = &nn_sigmoid_deri;
@@ -64,6 +63,7 @@ void Layer::add_one_node(const std::string& acti_fun_name) {
         node.activation = &nn_relu;
         node.activation_devi = &nn_relu_deri;
     }
+    nodes.push_back(node);
 }
 
 }
