@@ -15,7 +15,8 @@ namespace NN {
 class MINI_NN {
 public:
     //构造函数
-    MINI_NN(const std::string& data_path);
+    MINI_NN(const std::string& data_path,
+            uint32_t epoch);
 
     //正向传播
     void forward();
@@ -111,6 +112,12 @@ private:
 
    //y_train
    std::vector<std::vector<uint32_t> > _y_train;
+
+   //y_train未转化为向量之前
+   std::vector<std::string> _y_train_orig;
+
+   //对lable进行编号
+   std::map<std::string, uint32_t> _uniq_labels;
 };
     
 }
