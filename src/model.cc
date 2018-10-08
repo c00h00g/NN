@@ -11,7 +11,26 @@ MINI_NN::MINI_NN(const std::string& data_path,
     _epoch = epoch;
 
     //加载数据
-    load_data(_data_path, _x_train, _y_train_orig, _uniq_labels);
+    load_data(_data_path, _x_train, _y_train_orig, _uniq_label_to_int, _uniq_int_to_label);
+
+    trans_labels(_y_train_orig, _uniq_label_to_int);
+
+#if _DEBUG
+    for (uint32_t i = 0; i < _x_train.size(); ++i) {
+        for (uint32_t j = 0; j < _x_train[0].size(); ++j) {
+            std::cout << _x_train[i][j] << " ";
+        }
+        std::cout << std::endl;
+
+        for (uint32_t j = 0; j < _y_train[0].size(); ++j) {
+            std::cout << _y_train[i][j] << " ";
+        }
+        std::cout << std::endl;
+
+        std::string class_type = trans_vector_to_label(_y_train[i]);
+        std::cout << "class type is : " << class_type << std::endl;
+    }
+#endif
 }
 
 void MINI_NN::add_loss_func(const std::string& loss_type) {
@@ -32,7 +51,8 @@ void MINI_NN::load_data(
                    const std::string& data_path,
                    std::vector<std::vector<double> >& x_train,
                    std::vector<std::string>& y_train,
-                   std::map<std::string, uint32_t>& uniq_labels) {
+                   std::map<std::string, uint32_t>& _uniq_label_to_int,
+                   std::map<uint32_t, std::string>& _uniq_int_to_label) {
 
     std::vector<std::string> all_lines;
     {
@@ -50,10 +70,12 @@ void MINI_NN::load_data(
         split(all_lines[i], output, "\t");
         for (uint32_t j = 0; j < output.size(); ++j) {
             if (j == 0) {
-                auto iter = uniq_labels.find(output[j]);
+                auto iter = _uniq_label_to_int.find(output[j]);
                 //新label
-                if (iter == uniq_labels.end()) {
-                    uniq_labels[output[j]] = label_num++;
+                if (iter == _uniq_label_to_int.end()) {
+                    _uniq_label_to_int[output[j]] = label_num;
+                    _uniq_int_to_label[label_num] = output[j];
+                    ++label_num;
                 }
                 y_train.push_back(output[j]);
             }else {
@@ -61,6 +83,35 @@ void MINI_NN::load_data(
             }
         }
         x_train.push_back(fea);
+    }
+
+}
+
+/**
+ * @brief : 将label特征转化为向量
+ **/
+void MINI_NN::trans_labels(
+           std::vector<std::string>& y_train,
+           std::map<std::string, uint32_t>& _uniq_label_to_int) {
+
+    uint32_t map_len = _uniq_label_to_int.size();
+
+    for (uint32_t i = 0; i < y_train.size(); ++i) {
+        std::vector<uint32_t> trans_lable;
+        trans_lable.resize(map_len, 0);
+
+        uint32_t hit_index = _uniq_label_to_int[y_train[i]];
+        trans_lable[hit_index] = 1;
+        _y_train.push_back(trans_lable);
+    }
+}
+
+std::string MINI_NN::
+trans_vector_to_label(const std::vector<uint32_t>& fea_vec) {
+    for (uint32_t i = 0; i < fea_vec.size(); ++i) {
+        if (fea_vec[i] == 1) {
+            return _uniq_int_to_label[i];
+        }
     }
 }
 

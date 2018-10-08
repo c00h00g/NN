@@ -81,10 +81,17 @@ public:
     void fill_data(const std::vector<double>& train_line,
                    const std::vector<uint32_t>& train_label);
 
+    std::string trans_vector_to_label(const std::vector<uint32_t>& fea_vec);
+
     void load_data(const std::string& data_path,
                    std::vector<std::vector<double> >& x_train,
                    std::vector<std::string>& y_train,
-                   std::map<std::string, uint32_t>& all_labels);
+                   std::map<std::string, uint32_t>& _uniq_label_to_int,
+                   std::map<uint32_t, std::string>& _uniq_int_to_label);
+
+    void trans_labels(
+           std::vector<std::string>& y_train,
+           std::map<std::string, uint32_t>& uniq_labels);
 
     void fit();
 
@@ -117,7 +124,10 @@ private:
    std::vector<std::string> _y_train_orig;
 
    //对lable进行编号
-   std::map<std::string, uint32_t> _uniq_labels;
+   std::map<std::string, uint32_t> _uniq_label_to_int;
+
+   //将int转换为lable
+   std::map<uint32_t, std::string> _uniq_int_to_label;
 };
     
 }
