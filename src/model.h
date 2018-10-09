@@ -16,7 +16,8 @@ class MINI_NN {
 public:
     //构造函数
     MINI_NN(const std::string& data_path,
-            uint32_t epoch);
+            uint32_t epoch,
+            double eta);
 
     //正向传播
     void forward();
@@ -98,6 +99,9 @@ public:
 private:
    //epoch
    uint32_t _epoch;
+
+   //eta
+   double _eta;
 
    //训练文件
    std::string _data_path;

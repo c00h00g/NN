@@ -4,11 +4,13 @@
 namespace NN {
 
 MINI_NN::MINI_NN(const std::string& data_path, 
-                 uint32_t epoch) {
+                 uint32_t epoch,
+                 double eta) {
     input_nodes.clear();
     _layers.clear();
     _data_path = data_path;
     _epoch = epoch;
+    _eta = eta;
 
     //加载数据
     load_data(_data_path, _x_train, _y_train_orig, _uniq_label_to_int, _uniq_int_to_label);
@@ -33,6 +35,10 @@ MINI_NN::MINI_NN(const std::string& data_path,
 #endif
 }
 
+/**
+ * @brief : 添加损失函数
+ * @param loss_type : 损失函数类型
+ **/
 void MINI_NN::add_loss_func(const std::string& loss_type) {
     _loss_type = loss_type;
 }
@@ -134,6 +140,9 @@ void MINI_NN::fit() {
 
             //反向传播
             backward();
+
+            //for test
+            break;
         }
     }
 }
@@ -224,8 +233,14 @@ void MINI_NN::calc_middle_layer_grad() {
         last_layer_idx = layer_num - 1;
     }
 
-    for (uint32_t i = last_layer_idx; i >= 0; i--) {
-        //first layer
+#if _DEBUG
+    std::cerr << "layer_num : " << layer_num
+              << "  last_layer_idx : " << last_layer_idx
+              << std::endl;
+#endif
+
+    //warning ! i这里不能用uint32_t，i--之后就变成了unsigned(-1)
+    for (int32_t i = last_layer_idx; i >= 0; i--) {
         if (i == 0) {
             Layer& first_layer = _layers[i];
             calc_first_layer_grad(first_layer);
@@ -259,7 +274,7 @@ void MINI_NN::update_layer_weight(std::vector<std::vector<double> >& mat,
                                   std::vector<std::vector<double> >& grad) {
     for (uint32_t i = 0; i < mat.size(); ++i) {
         for (uint32_t j = 0; j < mat[0].size(); ++j) {
-            mat[i][j] -= grad[i][j];
+            mat[i][j] -= grad[i][j] * _eta;
         }
     }
 }
@@ -272,13 +287,30 @@ void MINI_NN::calc_first_layer_grad(Layer& first_layer) {
     std::vector<std::vector<double> >& grad = first_layer.grad;
     //计算梯度
     for (uint32_t i = 0; i < input_nodes.size(); ++i) {
-        for (uint32_t j = 0; j < first_layer.nodes.size(); ++i) {
+        for (uint32_t j = 0; j < first_layer.nodes.size(); ++j) {
             grad[j][i] = first_layer.nodes[j].devi_b_value * input_nodes[i];
         }
     }
 
     //更新梯度
     update_layer_weight(mat, grad);
+
+#if _DEBUG
+    std::cerr << "weight matrix is : " << std::endl;
+    for (uint32_t i = 0; i < mat.size(); ++i) {
+        for (uint32_t j = 0; j < mat[0].size(); ++j) {
+            std::cerr << mat[i][j] << " ";
+        }
+        std::cerr << std::endl;
+    }
+    std::cerr << "grad matrix is : " << std::endl;
+    for (uint32_t i = 0; i < grad.size(); ++i) {
+        for (uint32_t j = 0; j < grad[0].size(); ++j) {
+            std::cerr << grad[i][j] << " ";
+        }
+        std::cerr << std::endl;
+    }
+#endif
 }
 
 /**
@@ -370,10 +402,11 @@ void MINI_NN::first_layer_forward(Layer& first_layer) {
         calc_first_layer_node_forward(mat[i], first_layer.nodes[i]);
 
 #if _DEBUG
-        std::cerr << "Layer idx : \n" << 0
-                  << "Node idx : \n" << i
-                  << "b_value : " << first_layer.nodes[i].b_value
-                  << "a_value : " << first_layer.nodes[i].a_value;
+        std::cerr << "Layer idx : " << 0
+                  << " Node idx : " << i
+                  << " b_value : " << first_layer.nodes[i].b_value
+                  << " a_value : " << first_layer.nodes[i].a_value
+                  << std::endl;
 #endif
     }
 }
@@ -410,10 +443,11 @@ void MINI_NN::middle_layer_forward(Layer& left_layer,
                                       right_layer.nodes[i]);
 #if _DEBUG
         std::cerr << "left Layer idx : " << left_layer.level
-                  << "right Layer idx : " << right_layer.level
-                  << "Node idx : \n" << i
-                  << "b_value : " << right_layer.nodes[i].b_value
-                  << "a_value : " << right_layer.nodes[i].a_value;
+                  << " right Layer idx : " << right_layer.level
+                  << " Node idx : " << i
+                  << " b_value : " << right_layer.nodes[i].b_value
+                  << " a_value : " << right_layer.nodes[i].a_value
+                  << std::endl;
 #endif
     }
 }

@@ -7,7 +7,7 @@ double nn_log(double x) {
 }
 
 double nn_sigmoid(double x) {
-    return 1.0 / (1 + nn_log(x));
+    return 1.0 / (1 + std::exp(-1.0 * x));
 }
 
 double nn_tanh(double x) {
