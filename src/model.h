@@ -5,6 +5,7 @@
 #include <iostream>
 #include <assert.h>
 #include <map>
+#include <limits>
 
 #include "layer.h"
 #include "node.h"
@@ -82,7 +83,10 @@ public:
     void fill_data(const std::vector<double>& train_line,
                    const std::vector<uint32_t>& train_label);
 
-    std::string trans_vector_to_label(const std::vector<uint32_t>& fea_vec);
+    void fill_test_data(const std::vector<double>& line);
+
+    template <typename T>
+    std::string trans_vector_to_label(const std::vector<T>& fea_vec);
 
     void load_data(const std::string& data_path,
                    std::vector<std::vector<double> >& x_train,
@@ -90,11 +94,17 @@ public:
                    std::map<std::string, uint32_t>& _uniq_label_to_int,
                    std::map<uint32_t, std::string>& _uniq_int_to_label);
 
+    void load_test_data(const std::string& path);
+
+    uint32_t get_max_index(const std::vector<double>& value);
+
     void trans_labels(
            std::vector<std::string>& y_train,
            std::map<std::string, uint32_t>& uniq_labels);
 
     void fit();
+
+    void predict(const std::string& path);
 
 private:
    //epoch
@@ -132,6 +142,12 @@ private:
 
    //将int转换为lable
    std::map<uint32_t, std::string> _uniq_int_to_label;
+
+   //x_test
+   std::vector<std::vector<double> > _x_test;
+
+   //y_test未转换为向量之前
+   std::vector<std::string> _y_test_orig;
 };
     
 }
