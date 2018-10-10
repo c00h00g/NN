@@ -487,6 +487,8 @@ void MINI_NN::predict(const std::string& path) {
     //¼ÓÔØ²âÊÔÊı¾İ
     load_test_data(path);
 
+    uint32_t sum = _x_test.size();
+    uint32_t equal_num = 0;
     for (uint32_t i = 0; i < _x_test.size(); ++i) {
         fill_test_data(_x_test[i]);
         forward();
@@ -507,7 +509,11 @@ void MINI_NN::predict(const std::string& path) {
         std::cerr << "label : " << _y_test_orig[i]
                   << " predict : " << class_type
                   << std::endl;
+        if (_y_test_orig[i] == class_type) {
+            equal_num += 1;
+        }
     }
+    std::cerr << "precision is : " << equal_num * 1.0 / sum;
 }
 
 /**
