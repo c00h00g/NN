@@ -23,10 +23,18 @@ void Layer::init(uint32_t m,
                  uint32_t level) {
     assert(m > 0 && n > 0 && level >= 0);
 
+    std::minstd_rand rng(0);
+    std::uniform_real_distribution<> uniform(-1, 1);
+
     //初始化权重矩阵
     mat.resize(m);
     for (uint32_t i = 0; i < m; ++i) {
         mat[i].resize(n, 0);
+        for (uint32_t j = 0; j < n; ++j) {
+            mat[i][j] = uniform(rng);
+            //std::cerr << "uniform:" << mat[i][j] << " ";
+        }
+        //std::cerr << std::endl;
     }
 
     //初始化梯度矩阵

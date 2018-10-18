@@ -5,6 +5,8 @@
 #include <vector>
 #include <assert.h>
 #include <memory.h>
+#include <random>
+#include <iostream>
 
 #include "activation.h"
 #include "node.h"
@@ -46,7 +48,7 @@ public:
     //loss对weight的梯度
     std::vector<std::vector<double> > grad;
 
-    //所有对nodes
+    //所有nodes
     std::vector<Node> nodes;
 
     //loss函数类型

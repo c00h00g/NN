@@ -38,7 +38,7 @@ public:
     void add_layer(uint32_t node_num,
                    const std::string& acti_fun_name);
 
-    void add_input_layer(uint32_t input_num, uint32_t output_num);
+    void add_input_layer(uint32_t input_num);
 
     void first_layer_forward(Layer& first_layer);
 
@@ -106,6 +106,8 @@ public:
 
     void predict(const std::string& path);
 
+    void calc_softmax_loss();
+
 private:
    //epoch
    uint32_t _epoch;
@@ -148,6 +150,9 @@ private:
 
    //y_test未转换为向量之前
    std::vector<std::string> _y_test_orig;
+
+   double _sum_loss;
+   uint32_t _sum_loss_cnt;
 };
     
 }

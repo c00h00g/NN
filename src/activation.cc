@@ -40,7 +40,7 @@ double nn_tanh_deri(double x) {
  * @brief : 不是连续可导为什么可以用
  **/
 double nn_relu_deri(double x) {
-    return x > 0 ? 1 : 0;
+    return x > 0.0 ? 1.0 : 0.0;
 }
     
 };

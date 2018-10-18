@@ -12,6 +12,9 @@ MINI_NN::MINI_NN(const std::string& data_path,
     _epoch = epoch;
     _eta = eta;
 
+    _sum_loss = 0.0;
+    _sum_loss_cnt = 0;
+
     //加载数据
     load_data(_data_path, _x_train, _y_train_orig, _uniq_label_to_int, _uniq_int_to_label);
 
@@ -49,6 +52,20 @@ void MINI_NN::fill_data(
     
     input_nodes.assign(train_line.begin(), train_line.end());
     _labels.assign(train_label.begin(), train_label.end());
+
+#if _TRACE
+    std::cerr << "input nodes is:" << std::endl;
+    for (uint32_t i = 0; i < input_nodes.size(); ++i) {
+        std::cerr << input_nodes[i] << " ";
+    }
+    std::cerr << std::endl;
+
+    std::cerr << "label is : " << std::endl;
+    for (uint32_t i = 0; i < train_label.size(); ++i) {
+        std::cerr << train_label[i] << " ";
+    }
+    std::cerr << std::endl;
+#endif
 }
 
 void MINI_NN::fill_test_data(const std::vector<double>& line) {
@@ -67,7 +84,7 @@ void MINI_NN::load_data(
     std::vector<std::string> all_lines;
     {
         read_lines(data_path, all_lines);
-        std::random_shuffle(all_lines.begin(), all_lines.end());
+        //std::random_shuffle(all_lines.begin(), all_lines.end());
     }
 
     std::vector<double> fea;
@@ -94,10 +111,17 @@ void MINI_NN::load_data(
         }
         x_train.push_back(fea);
     }
-#if _DEBUG
+#if _TRACE
     std::cerr << "uniq_label to int" << std::endl;
     for (auto it : _uniq_label_to_int) {
         std::cerr << it.first << " " << it.second << std::endl;
+    }
+
+    for (uint32_t i = 0; i < x_train.size(); ++i) {
+        for (uint32_t j = 0; j < x_train[0].size(); ++j) {
+            std::cerr << x_train[i][j] << " ";
+        }
+        std::cerr << std::endl;
     }
 #endif
 }
@@ -126,6 +150,13 @@ void MINI_NN::load_test_data(const std::string& path) {
         }
         _x_test.push_back(fea);
     }
+#if _TRACE
+    std::cerr << "load_test_data info : " << std::endl;
+    for (uint32_t i = 0; i < _y_test_orig.size(); ++i) {
+        std::cerr << _y_test_orig[i] << " ";
+    }
+    std::cerr << std::endl;
+#endif
 }
 
 /**
@@ -183,16 +214,6 @@ void MINI_NN::fit() {
 
         }
     }
-#if _DEBUG
-    for (uint32_t i = 0; i < _x_train.size(); ++i) {
-
-        //feed数据
-        fill_data(_x_train[i], _y_train[i]);
-
-        //前向传播
-        forward();
-    }
-#endif
 }
 
 /**
@@ -219,8 +240,7 @@ void MINI_NN::add_first_layer(
     _layers.push_back(layer);
 }
 
-void MINI_NN::add_input_layer(uint32_t input_num,
-                              uint32_t output_num) {
+void MINI_NN::add_input_layer(uint32_t input_num) {
     input_nodes.resize(input_num);
 }
 
@@ -240,7 +260,7 @@ void MINI_NN::add_layer(uint32_t node_num,
 }
 
 void MINI_NN::add_middle_layer(uint32_t node_num,
-                              const std::string& acti_fun_name) {
+                               const std::string& acti_fun_name) {
     Layer layer;
 
     uint32_t row = node_num;
@@ -370,7 +390,7 @@ void MINI_NN::calc_first_layer_grad(Layer& first_layer) {
 /**
  * @brief : 计算反向传播
  * @param node : 左边一层一个节点
- * @param node_idx : 节点索引
+ * @param node_idx : 左边节点索引
  * @param right_layer : 右边一层
  * @param mat : left_layer & right_layer之间的矩阵
  **/
@@ -385,8 +405,9 @@ void MINI_NN::calc_one_node_backward(Node& node,
         //计算矩阵的梯度
         right_layer.grad[i][node_idx] = right_layer.nodes[i].devi_b_value * node.a_value;
     }
+
     node.devi_a_value = sum;
-    node.devi_b_value = node.activation_devi(node.devi_a_value);
+    node.devi_b_value = node.activation_devi(node.b_value) * node.devi_a_value;
 }
 
 /**
@@ -408,13 +429,15 @@ calc_cross_entropy_last_layer_grad(const std::vector<uint32_t>& labels) {
     Layer& last_layer = _layers[layer_num - 2];
     for (uint32_t i = 0; i < last_layer.nodes.size(); ++i) {
         Node& node = last_layer.nodes[i];
+
         //softmax层只记录最终的值a_value, 即softmax值
         node.devi_a_value = 
             labels[i] == 1 ? softmax_layer.nodes[i].a_value - 1 : softmax_layer.nodes[i].a_value;
-        node.devi_b_value = node.activation_devi(node.devi_a_value) * node.devi_a_value;
+
+        node.devi_b_value = node.activation_devi(node.b_value) * node.devi_a_value;
     }
 
-#if _DEBUG
+#if _TRACE
     std::cerr << "last node grad is : =====================" << std::endl;
     for (uint32_t i = 0; i < last_layer.nodes.size(); ++i) {
         Node& node = last_layer.nodes[i];
@@ -439,7 +462,7 @@ calc_squared_last_layer_grad(const std::vector<uint32_t>& labels) {
         node.devi_a_value = 
            labels[i] == 1 ? -1 * (1 - node.a_value) : node.a_value;
         //计算之前导数
-        node.devi_b_value = node.activation_devi(node.devi_a_value);
+        node.devi_b_value = node.activation_devi(node.b_value) * node.devi_a_value;
     }
 }
 
@@ -458,7 +481,11 @@ void MINI_NN::forward() {
             }
         }
     }
-#if _DEBUG
+
+    //就算loss
+    calc_softmax_loss();
+
+#if _TRACE
     std::vector<double> fea;
     uint32_t layer_len = _layers.size();
     Layer& last_layer = _layers[layer_len - 1];
@@ -471,10 +498,36 @@ void MINI_NN::forward() {
 
     std::string real_lb = trans_vector_to_label(_labels);
     std::string lb = trans_vector_to_label(fea);
-    std::cerr << "real_lb : " << real_lb 
+    std::cerr << "forward -> real_lb : " << real_lb 
               << " predict_lb : " << lb
               << std::endl;
 #endif
+}
+
+/**
+ * @brief : 计算softmax loss
+ **/
+void MINI_NN::calc_softmax_loss() {
+    std::vector<double> fea;
+    uint32_t layer_len = _layers.size();
+    Layer& last_layer = _layers[layer_len - 1];
+    for (uint32_t i = 0; i < last_layer.nodes.size(); ++i) {
+        fea.push_back(last_layer.nodes[i].a_value);
+    }
+    
+    for (uint32_t i = 0; i < _labels.size(); ++i) {
+        if (_labels[i] == 0) {
+            continue;
+        }
+        _sum_loss += -1.0 * nn_log(fea[i]);
+        _sum_loss_cnt += 1;
+
+        break;
+    }
+
+    if (_sum_loss_cnt % 500 == 0) {
+        std::cout << "avg loss is : " << _sum_loss * 1.0 / _sum_loss_cnt << std::endl;
+    }
 }
 
 /**
@@ -513,7 +566,7 @@ void MINI_NN::predict(const std::string& path) {
             equal_num += 1;
         }
     }
-    std::cerr << "precision is : " << equal_num * 1.0 / sum;
+    std::cerr << "precision is : " << equal_num * 1.0 / sum << std::endl;
 }
 
 /**
@@ -532,7 +585,7 @@ uint32_t MINI_NN::get_max_index(const std::vector<double>& value) {
 }
 
 void MINI_NN::first_layer_forward(Layer& first_layer) {
-    std::vector<std::vector<double> >& mat = _layers[0].mat;
+    std::vector<std::vector<double> >& mat = first_layer.mat;
     for (uint32_t i = 0; i < first_layer.nodes.size(); ++i) {
         calc_first_layer_node_forward(mat[i], first_layer.nodes[i]);
 
@@ -570,7 +623,7 @@ void MINI_NN::calc_first_layer_node_forward(
  * @param right_layer : 右边一层
  **/
 void MINI_NN::middle_layer_forward(Layer& left_layer,
-                                  Layer& right_layer) {
+                                   Layer& right_layer) {
     std::vector<std::vector<double> >& mat = right_layer.mat;
     for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
         calc_middle_layer_node_forward(mat[i], 

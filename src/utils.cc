@@ -27,6 +27,8 @@ void read_lines(const std::string& data_path,
     while (getline(fin, line)) {
         lines.push_back(line);
     }
+
+    fin.close();
 }
     
 }
