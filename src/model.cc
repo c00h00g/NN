@@ -200,7 +200,12 @@ trans_vector_to_label(const std::vector<T>& value) {
  **/
 void MINI_NN::fit() {
 
-    while (_epoch--) {
+    while(--_epoch) {
+
+        //每次epoch重新初始化
+        _sum_loss = 0.0;
+        _sum_loss_cnt = 0;
+
         for (uint32_t i = 0; i < _x_train.size(); ++i) {
 
             //feed数据
@@ -327,6 +332,8 @@ void MINI_NN::calc_two_layer_grad(Layer& left_layer,
     //计算节点梯度
     std::vector<std::vector<double> >& mat = right_layer.mat; 
     std::vector<std::vector<double> >& grad = right_layer.grad; 
+
+    #pragma omp parallel for
     for (uint32_t i = 0; i < left_layer.nodes.size(); ++i) {
         calc_one_node_backward(left_layer.nodes[i],
                                i,
@@ -358,8 +365,11 @@ void MINI_NN::update_layer_weight(std::vector<std::vector<double> >& mat,
 void MINI_NN::calc_first_layer_grad(Layer& first_layer) {
     std::vector<std::vector<double> >& mat = first_layer.mat;
     std::vector<std::vector<double> >& grad = first_layer.grad;
+
     //计算梯度
+    #pragma omp parallel for
     for (uint32_t i = 0; i < input_nodes.size(); ++i) {
+        #pragma omp parallel for
         for (uint32_t j = 0; j < first_layer.nodes.size(); ++j) {
             grad[j][i] = first_layer.nodes[j].devi_b_value * input_nodes[i];
         }
@@ -399,6 +409,7 @@ void MINI_NN::calc_one_node_backward(Node& node,
                                      Layer& right_layer,
                                      std::vector<std::vector<double> >& mat) {
     double sum = 0;
+    #pragma omp parallel for
     for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
         sum += mat[i][node_idx] * right_layer.nodes[i].devi_b_value;
 
@@ -526,7 +537,7 @@ void MINI_NN::calc_softmax_loss() {
     }
 
     if (_sum_loss_cnt % 500 == 0) {
-        std::cout << "avg loss is : " << _sum_loss * 1.0 / _sum_loss_cnt << std::endl;
+        std::cout << "Iter: " <<  _epoch << ", avg loss is : " << _sum_loss * 1.0 / _sum_loss_cnt << std::endl;
     }
 }
 
@@ -586,6 +597,8 @@ uint32_t MINI_NN::get_max_index(const std::vector<double>& value) {
 
 void MINI_NN::first_layer_forward(Layer& first_layer) {
     std::vector<std::vector<double> >& mat = first_layer.mat;
+
+    #pragma omp parallel for
     for (uint32_t i = 0; i < first_layer.nodes.size(); ++i) {
         calc_first_layer_node_forward(mat[i], first_layer.nodes[i]);
 
@@ -606,6 +619,7 @@ void MINI_NN::calc_first_layer_node_forward(
              const std::vector<double>& weight,
              Node& node) {
     double sum = 0.0;
+    #pragma omp parallel for
     for (uint32_t i = 0; i < weight.size(); ++i) {
         sum += weight[i] * input_nodes[i];
     }
@@ -625,6 +639,8 @@ void MINI_NN::calc_first_layer_node_forward(
 void MINI_NN::middle_layer_forward(Layer& left_layer,
                                    Layer& right_layer) {
     std::vector<std::vector<double> >& mat = right_layer.mat;
+
+    #pragma omp parallel for
     for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
         calc_middle_layer_node_forward(mat[i], 
                                       left_layer,
@@ -655,6 +671,7 @@ double MINI_NN::softmax_sum(const Layer& layer) {
 void MINI_NN::softmax_layer_forward(const Layer& left_layer,
                                     Layer& right_layer) {
     double sum = softmax_sum(left_layer);
+    #pragma omp parallel for
     for (uint32_t i = 0; i < right_layer.nodes.size(); ++i) {
         right_layer.nodes[i].a_value = 
                       std::exp(left_layer.nodes[i].a_value) / sum;

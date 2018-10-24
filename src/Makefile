@@ -1,5 +1,5 @@
 CXX=c++
-CXXFLAGS=-std=c++11 -g -march=native -D_TRACE
+CXXFLAGS=-std=c++11 -g -march=native -fopenmp
 RM=rm -f
 
 mini_nn : utils.o activation.o layer.o model.o mini_nn.o

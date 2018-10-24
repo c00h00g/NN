@@ -6,15 +6,16 @@
 #include <algorithm>
 
 int main() {
-    NN::MINI_NN * mini_nn = new NN::MINI_NN("train_data.tst", 10, 0.1);
+    NN::MINI_NN * mini_nn = new NN::MINI_NN("../data/train_data.tst", 30, 0.05);
     mini_nn->add_input_layer(784);
     mini_nn->add_layer(1000, "sigmoid");
+    mini_nn->add_layer(800, "sigmoid");
     mini_nn->add_layer(10, "sigmoid");
     mini_nn->add_layer(10, "softmax");
     mini_nn->add_loss_func("cross-entropy");
     mini_nn->fit();
 
-    mini_nn->predict("test_data.tst");
+    mini_nn->predict("../data/test_data.tst");
 
     return 0;
 }
